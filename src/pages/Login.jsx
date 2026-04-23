@@ -1,0 +1,80 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import './pages.css'
+
+export default function Login() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    
+    try {
+      const user = await login(email, password)
+      if (user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/app')
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-brand">
+          <h1>SAH Academy</h1>
+          <p>Learn Accounting & Odoo</p>
+        </div>
+        
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <h2>Sign In</h2>
+          
+          {error && <div className="error">{error}</div>}
+          
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          
+          <button type="submit" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+          
+          <p className="auth-link">
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  )
+}
