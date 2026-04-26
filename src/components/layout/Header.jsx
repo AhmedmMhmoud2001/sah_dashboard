@@ -53,13 +53,13 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed }) {
           <div className="logo-icon">
             <BookOpen size={24} strokeWidth={2.5} />
           </div>
-          <span className="logo-text">SAH ACADEMY</span>
+          <span className="logo-text">{t('app.name')}</span>
         </div>
         
         <button 
           className="header-btn desktop-only" 
           onClick={toggleCollapse}
-          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          title={isCollapsed ? t('ui.expandSidebar') : t('ui.collapseSidebar')}
         >
           <PanelLeft size={20} />
         </button>
@@ -73,7 +73,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed }) {
         <button 
           className="header-btn lang-toggle" 
           onClick={toggleLanguage}
-          title={lang === 'ar' ? 'Switch to English' : 'التحويل للعربية'}
+          title={lang === 'ar' ? t('ui.switchToEnglish') : t('ui.switchToArabic')}
         >
           <Languages size={20} />
           <span style={{ marginLeft: isRTL ? '0' : '4px', marginRight: isRTL ? '4px' : '0', fontSize: '12px', fontWeight: 600 }}>
@@ -97,7 +97,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed }) {
             <div className="user-avatar">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
-            <span className="user-name">{user?.name || 'User'}</span>
+            <span className="user-name">{user?.name || t('ui.user')}</span>
             <ChevronDown size={14} className="dropdown-icon" />
           </button>
 

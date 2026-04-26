@@ -50,7 +50,9 @@ export default function Dashboard() {
     <div className="admin-dashboard animate-fade-in">
       <div className="dashboard-header">
         <h1 className="page-title">{t('nav.dashboard')}</h1>
-        <p className="subtitle">Welcome back! Here's what's happening in your academy today.</p>
+        <p className="subtitle">
+          {t('admin.dashboard.subtitle')}
+        </p>
       </div>
       
       <div className="stats-grid">
@@ -72,7 +74,7 @@ export default function Dashboard() {
         <div className="chart-card">
           <div className="chart-header">
             <TrendingUp size={18} />
-            <h3>Revenue Trend (Last 6 Months)</h3>
+            <h3>{t('admin.dashboard.revenueTrend')}</h3>
           </div>
           <div className="chart-body">
             <ResponsiveContainer width="100%" height={300}>
@@ -100,7 +102,7 @@ export default function Dashboard() {
         <div className="chart-card">
           <div className="chart-header">
             <BarChart3 size={18} />
-            <h3>Student Enrollment Trend</h3>
+            <h3>{t('admin.dashboard.enrollmentTrend')}</h3>
           </div>
           <div className="chart-body">
             <ResponsiveContainer width="100%" height={300}>
@@ -123,7 +125,7 @@ export default function Dashboard() {
         <div className="chart-card full-width">
           <div className="chart-header">
             <PieChart size={18} />
-            <h3>Top Selling Courses</h3>
+            <h3>{t('admin.dashboard.topCourses')}</h3>
           </div>
           <div className="chart-body top-courses-body">
             <div className="pie-container">
@@ -151,7 +153,7 @@ export default function Dashboard() {
                 <div key={idx} className="top-course-item">
                   <div className="course-color" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
                   <span className="course-name">{course.name}</span>
-                  <span className="course-value">{course.value} Sales</span>
+                  <span className="course-value">{t('admin.dashboard.sales', { n: course.value })}</span>
                 </div>
               ))}
             </div>

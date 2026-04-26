@@ -22,7 +22,7 @@ export default function Subscriptions() {
   }
 
   const getStatusBadge = (status) => {
-    const classes = { active: 'badge-success', completed: 'badge-primary', expired: 'badge-danger' }
+    const classes = { active: 'badge-success', completed: 'badge-primary', expired: 'badge-danger', pending: 'badge-warning' }
     return classes[status] || 'badge'
   }
 
@@ -55,7 +55,7 @@ export default function Subscriptions() {
               <td>{new Date(sub.enrolledAt).toLocaleDateString()}</td>
               <td>
                 <span className={`badge ${getStatusBadge(sub.status)}`}>
-                  {t(`subs.${sub.status}`)}
+                  {t(`subs.${sub.status}`) || sub.status}
                 </span>
               </td>
               <td>

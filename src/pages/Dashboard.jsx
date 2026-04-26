@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useI18n } from '../context/I18nContext'
 import * as api from '../api'
 import './pages.css'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
+  const { isRTL } = useI18n()
   const [courses, setCourses] = useState([])
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,13 +41,13 @@ export default function Dashboard() {
 
         <div className="container">
           <section className="welcome-section">
-            <h2>Welcome back, {user?.name}!</h2>
-            <p>Continue your learning journey</p>
+            <h2>{isRTL ? `مرحباً بعودتك، ${user?.name || ''}!` : `Welcome back, ${user?.name || ''}!`}</h2>
+            <p>{isRTL ? 'واصل رحلتك التعليمية' : 'Continue your learning journey'}</p>
           </section>
 
           {inProgress.length > 0 && (
             <section className="continue-section">
-              <h3>Continue Learning</h3>
+              <h3>{isRTL ? 'أكمل التعلّم' : 'Continue Learning'}</h3>
               <div className="course-grid">
                 {inProgress.map(enrollment => (
                   <Link 
@@ -62,7 +64,7 @@ export default function Dashboard() {
                           style={{ width: `${enrollment.progress}%` }}
                         />
                       </div>
-                      <p>{enrollment.progress}% complete</p>
+                      <p>{isRTL ? `${enrollment.progress}% مكتمل` : `${enrollment.progress}% complete`}</p>
                     </div>
                   </Link>
                 ))}
@@ -71,9 +73,9 @@ export default function Dashboard() {
           )}
 
           <section className="courses-section">
-            <h3>All Courses</h3>
+            <h3>{isRTL ? 'كل الدورات' : 'All Courses'}</h3>
             {loading ? (
-              <p>Loading...</p>
+              <p>{isRTL ? 'جاري التحميل...' : 'Loading...'}</p>
             ) : (
               <div className="course-grid">
                 {courses.slice(0, 6).map(course => (
@@ -86,7 +88,7 @@ export default function Dashboard() {
                     <div className="course-info">
                       <h4>{course.title}</h4>
                       <p>{course.duration} • {course.level}</p>
-                      <p className="price">{course.price} SAR</p>
+                      <p className="price">{isRTL ? `${course.price} ر.س` : `${course.price} SAR`}</p>
                     </div>
                   </Link>
                 ))}

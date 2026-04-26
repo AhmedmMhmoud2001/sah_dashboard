@@ -1,17 +1,32 @@
 import { useState, useEffect } from 'react'
-import { Edit, Trash2, ExternalLink } from 'lucide-react'
+import { Edit, Trash2, ExternalLink, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../../context/I18nContext'
-import { getAdminCourses, getAdminLessons, createAdminLesson, updateAdminLesson, deleteAdminLesson } from '../../api'
+import { getAdminCourses, getAdminLessons, getAdminQuizzes, deleteAdminLesson } from '../../api'
+
+function apiOrigin() {
+  try {
+    const base = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+    return new URL(base).origin
+  } catch {
+    return 'http://localhost:3000'
+  }
+}
+
+function resolveImageUrl(url) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  return `${apiOrigin()}${url.startsWith('/') ? '' : '/'}${url}`
+}
 
 export default function Videos() {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
+  const navigate = useNavigate()
   const [lessons, setLessons] = useState([])
   const [courses, setCourses] = useState([])
+  const [lessonQuizMap, setLessonQuizMap] = useState({})
   const [courseId, setCourseId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [editingLesson, setEditingLesson] = useState(null)
-  const [form, setForm] = useState({ title: '', enTitle: '', duration: '', videoUrl: '', sortOrder: 1, courseId: '' })
 
   useEffect(() => {
     loadData()
@@ -26,27 +41,23 @@ export default function Videos() {
       ])
       setLessons(lessonsRes.lessons || [])
       setCourses(coursesRes.courses || [])
+
+      // Only fetch quizzes when course filter is selected (keeps it fast).
+      if (courseId) {
+        const quizzesRes = await getAdminQuizzes({ type: 'lesson', courseId })
+        const map = {}
+        ;(quizzesRes.quizzes || []).forEach((q) => {
+          if (q?.lessonId) map[q.lessonId] = q
+          if (q?.lesson?.id) map[q.lesson.id] = q
+        })
+        setLessonQuizMap(map)
+      } else {
+        setLessonQuizMap({})
+      }
     } catch (err) {
       console.error('Load error:', err)
     }
     setLoading(false)
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    try {
-      if (editingLesson) {
-        await updateAdminLesson(editingLesson.id, form)
-      } else {
-        await createAdminLesson(form)
-      }
-      setShowModal(false)
-      setEditingLesson(null)
-      setForm({ title: '', enTitle: '', duration: '', videoUrl: '', sortOrder: 1, courseId: '' })
-      loadData()
-    } catch (err) {
-      alert(t('msg.error'))
-    }
   }
 
   async function handleDelete(id) {
@@ -59,39 +70,22 @@ export default function Videos() {
     }
   }
 
-  function openEdit(lesson) {
-    setEditingLesson(lesson)
-    setForm({
-      title: lesson.title || '',
-      enTitle: lesson.enTitle || '',
-      duration: lesson.duration || '',
-      videoUrl: lesson.videoUrl || '',
-      sortOrder: lesson.sortOrder || 1,
-      courseId: lesson.courseId || ''
-    })
-    setShowModal(true)
-  }
-
-  function openAdd() {
-    setEditingLesson(null)
-    setForm({ title: '', enTitle: '', duration: '', videoUrl: '', sortOrder: 1, courseId: courseId || courses[0]?.id || '' })
-    setShowModal(true)
-  }
-
   return (
     <div className="admin-page">
       <div className="page-header">
         <h1>{t('nav.videos')}</h1>
-        <button className="btn btn-primary" onClick={openAdd}>+ {t('actions.add')}</button>
+        <button className="btn btn-primary" onClick={() => navigate('/admin/videos/new')}>
+          <Plus size={18} style={{ marginInlineEnd: 8 }} />
+          {t('actions.add')}
+        </button>
       </div>
 
-      <div className="search-bar" style={{ marginBottom: '24px' }}>
+      <div className="filtersBar">
         <select 
           value={courseId} 
           onChange={(e) => setCourseId(e.target.value)}
-          style={{ padding: '10px 16px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text-primary)', minWidth: '240px' }}
         >
-          <option value="">{t('actions.allCourses') || 'All Courses'}</option>
+          <option value="">{t('actions.allCourses')}</option>
           {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
         </select>
       </div>
@@ -107,29 +101,64 @@ export default function Videos() {
               <th width="60">#</th>
               <th>{t('courses.title')}</th>
               <th>{t('courses.duration')}</th>
-              <th>Video</th>
-              <th width="100">{t('actions.title') || 'Actions'}</th>
+              <th>{t('videos.video') || (t('nav.videos') || 'فيديو')}</th>
+              <th>{t('nav.quizzes')}</th>
+              <th width="100">{t('actions.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {lessons.map((lesson, idx) => (
+              (() => {
+                const q = lessonQuizMap?.[lesson.id] || null
+                return (
               <tr key={lesson.id}>
                 <td>{idx + 1}</td>
                 <td>
-                  <div style={{ fontWeight: 600 }}>{lesson.title}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lesson.enTitle}</div>
+                  <div className="thumbCell">
+                    {lesson.thumbnailUrl ? (
+                      <img className="thumbCell__img" src={resolveImageUrl(lesson.thumbnailUrl)} alt="" />
+                    ) : (
+                      <span className="thumbCell__img" aria-hidden="true" />
+                    )}
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{lesson.title}</div>
+                      {lang === 'en' && lesson.enTitle ? (
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lesson.enTitle}</div>
+                      ) : null}
+                    </div>
+                  </div>
                 </td>
                 <td>{lesson.duration}</td>
                 <td>
                   {lesson.videoUrl ? (
-                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="action-btn" title="Watch Video">
+                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="action-btn" title={t('videos.watch') || 'مشاهدة'}>
                       <ExternalLink size={18} />
                     </a>
                   ) : '-'}
                 </td>
                 <td>
+                  {!courseId ? (
+                    <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                      {t('quizzes.selectCourseFirst') || (lang === 'en' ? 'Select course' : 'اختر دورة')}
+                    </span>
+                  ) : q ? (
+                    <button
+                      type="button"
+                      className="action-btn"
+                      title={t('actions.edit')}
+                      onClick={() => navigate(`/admin/quizzes/${q.id}/edit`)}
+                    >
+                      {t('videos.quizLinked', { title: (lang === 'en' ? (q.enTitle || q.title) : (q.title || q.enTitle)) || q.id })}
+                    </button>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                      {t('videos.noQuizLinked')}
+                    </span>
+                  )}
+                </td>
+                <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="action-btn" onClick={() => openEdit(lesson)} title={t('actions.edit')}>
+                    <button className="action-btn" onClick={() => navigate(`/admin/videos/${lesson.id}/edit`)} title={t('actions.edit')}>
                       <Edit size={18} />
                     </button>
                     <button className="action-btn delete" onClick={() => handleDelete(lesson.id)} title={t('actions.delete')}>
@@ -138,51 +167,11 @@ export default function Videos() {
                   </div>
                 </td>
               </tr>
+                )
+              })()
             ))}
           </tbody>
         </table>
-      )}
-
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingLesson ? t('courses.edit') : t('courses.add')}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Title (Arabic)</label>
-                <input type="text" value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Title (English)</label>
-                <input type="text" value={form.enTitle} onChange={(e) => setForm({...form, enTitle: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Course</label>
-                <select value={form.courseId} onChange={(e) => setForm({...form, courseId: e.target.value})} required>
-                  <option value="">Select Course</option>
-                  {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Duration</label>
-                <input type="text" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})} placeholder="e.g. 10:00" />
-              </div>
-              <div className="form-group">
-                <label>Video URL</label>
-                <input type="url" value={form.videoUrl} onChange={(e) => setForm({...form, videoUrl: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Sort Order</label>
-                <input type="number" value={form.sortOrder} onChange={(e) => setForm({...form, sortOrder: e.target.value})} />
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary">{t('actions.save')}</button>
-                <button type="button" className="btn" onClick={() => setShowModal(false)}>{t('actions.cancel')}</button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
     </div>
   )

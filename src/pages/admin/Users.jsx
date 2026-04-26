@@ -40,7 +40,7 @@ export default function Users() {
       setFormData({ name: '', email: '', password: '', role: 'student' })
       loadUsers()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to save user')
+      alert(error.response?.data?.error || t('users.saveFailed'))
     }
   }
 
@@ -50,7 +50,7 @@ export default function Users() {
       await deleteAdminUser(id)
       loadUsers()
     } catch (error) {
-      alert('Failed to delete user')
+      alert(t('users.deleteFailed'))
     }
   }
 
@@ -70,7 +70,7 @@ export default function Users() {
 
   function handleView(user) {
     // For now, we can just alert or log, or navigate to a profile if it exists
-    alert(`Viewing user: ${user.name} (${user.email})`)
+    alert(t('users.viewing', { name: user.name, email: user.email }))
   }
 
   return (
@@ -93,7 +93,7 @@ export default function Users() {
               <th>{t('users.email')}</th>
               <th>{t('users.role')}</th>
               <th>{t('users.created')}</th>
-              <th>Actions</th>
+              <th>{t('actions.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -101,11 +101,11 @@ export default function Users() {
               <tr key={user.id}>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td><span className={`badge badge-${user.role}`}>{user.role}</span></td>
+                <td><span className={`badge badge-${user.role}`}>{t(`users.role.${user.role}`) || user.role}</span></td>
                 <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="action-btn" onClick={() => handleView(user)} title={t('actions.view') || 'View'}>
+                    <button className="action-btn" onClick={() => handleView(user)} title={t('actions.view')}>
                       <Eye size={18} />
                     </button>
                     <button className="action-btn" onClick={() => openEdit(user)} title={t('actions.edit')}>
@@ -136,14 +136,14 @@ export default function Users() {
                 <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>{isEdit ? 'New Password (Optional)' : 'Password'}</label>
+                <label>{isEdit ? t('users.newPasswordOptional') : t('users.password')}</label>
                 <input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isEdit} />
               </div>
               <div className="form-group">
                 <label>{t('users.role')}</label>
                 <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                  <option value="student">Student</option>
-                  <option value="admin">Admin</option>
+                  <option value="student">{t('users.role.student')}</option>
+                  <option value="admin">{t('users.role.admin')}</option>
                 </select>
               </div>
               <div className="form-actions">

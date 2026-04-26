@@ -54,17 +54,17 @@ export default function RBAC() {
       setShowModal(false)
       loadData()
     } catch (error) {
-      alert('Failed to save role')
+      alert(t('rbac.saveFailed'))
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm('Delete this role? This will affect all users assigned to it.')) return
+    if (!confirm(t('rbac.deleteConfirm'))) return
     try {
       await deleteAdminRole(id)
       loadData()
     } catch (error) {
-      alert('Delete failed')
+      alert(t('rbac.deleteFailed'))
     }
   }
 
@@ -95,20 +95,20 @@ export default function RBAC() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h1>{t('nav.rbac') || 'Access Control (RBAC)'}</h1>
-        <button className="btn btn-primary" onClick={openAdd}><Plus size={18} /> Create Role</button>
+        <h1>{t('rbac.title')}</h1>
+        <button className="btn btn-primary" onClick={openAdd}><Plus size={18} /> {t('rbac.createRole')}</button>
       </div>
 
       <div className="stats-grid" style={{ marginBottom: '30px' }}>
         <div className="stat-card">
-          <p className="stat-card-title">Total Roles</p>
+          <p className="stat-card-title">{t('rbac.totalRoles')}</p>
           <p className="stat-card-value">{roles.length}</p>
           <div className="stat-card-icon" style={{ color: 'var(--primary)' }}>
             <ShieldCheck size={32} />
           </div>
         </div>
         <div className="stat-card">
-          <p className="stat-card-title">Available Permissions</p>
+          <p className="stat-card-title">{t('rbac.availablePermissions')}</p>
           <p className="stat-card-value">{permissions.length}</p>
           <div className="stat-card-icon" style={{ color: 'var(--secondary)' }}>
             <ShieldAlert size={32} />
@@ -121,11 +121,11 @@ export default function RBAC() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Role Name</th>
-                <th>Description</th>
-                <th>Users</th>
-                <th>Permissions</th>
-                <th>Actions</th>
+                <th>{t('rbac.roleName')}</th>
+                <th>{t('rbac.description')}</th>
+                <th>{t('rbac.users')}</th>
+                <th>{t('rbac.permissions')}</th>
+                <th>{t('rbac.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -147,17 +147,17 @@ export default function RBAC() {
                         </span>
                       ))}
                       {role.permissions.length > 3 && (
-                        <span className="badge badge-outline" style={{ fontSize: '10px' }}>+{role.permissions.length - 3} more</span>
+                        <span className="badge badge-outline" style={{ fontSize: '10px' }}>{t('rbac.more', { n: role.permissions.length - 3 })}</span>
                       )}
                     </div>
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="action-btn" onClick={() => openEdit(role)} title="Edit Role">
+                      <button className="action-btn" onClick={() => openEdit(role)} title={t('rbac.editRole')}>
                         <Edit size={18} />
                       </button>
                       {role.name !== 'admin' && (
-                        <button className="action-btn delete" onClick={() => handleDelete(role.id)} title="Delete Role">
+                        <button className="action-btn delete" onClick={() => handleDelete(role.id)} title={t('rbac.deleteRole')}>
                           <Trash2 size={18} />
                         </button>
                       )}
@@ -173,30 +173,30 @@ export default function RBAC() {
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
-            <h2>{isEdit ? 'Edit Role' : 'Create New Role'}</h2>
+            <h2>{isEdit ? t('rbac.editRole') : t('rbac.createNewRole')}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Role Name</label>
+                <label>{t('rbac.roleNameLabel')}</label>
                 <input 
                   type="text" 
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value.toLowerCase().replace(/\s+/g, '_')})} 
-                  placeholder="e.g. course_editor"
+                  placeholder={t('rbac.roleNamePh')}
                   required 
                   disabled={isEdit && formData.name === 'admin'}
                 />
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label>{t('rbac.description')}</label>
                 <textarea 
                   value={formData.description} 
                   onChange={e => setFormData({...formData, description: e.target.value})} 
-                  placeholder="What can this role do?"
+                  placeholder={t('rbac.descriptionPh')}
                 />
               </div>
 
               <div className="form-group">
-                <label>Assign Permissions</label>
+                <label>{t('rbac.assignPermissions')}</label>
                 <div className="permissions-grid" style={{ 
                   display: 'grid', 
                   gridTemplateColumns: '1fr 1fr', 

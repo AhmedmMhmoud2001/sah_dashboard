@@ -5,6 +5,7 @@ import {
   BookOpen,
   Video,
   HelpCircle,
+  ClipboardList,
   BarChart3,
   CreditCard,
   Info,
@@ -16,7 +17,8 @@ import {
   Briefcase,
   ShoppingCart,
   Tag,
-  Shield
+  Shield,
+  Award
 } from 'lucide-react'
 import { useI18n } from '../../context/I18nContext'
 import { useAuth } from '../../context/AuthContext'
@@ -36,6 +38,7 @@ const adminGroups = [
     title: 'content',
     items: [
       { path: '/admin/videos', icon: Video, key: 'nav.videos' },
+      { path: '/admin/quizzes', icon: ClipboardList, key: 'nav.quizzes' },
       { path: '/admin/questions', icon: HelpCircle, key: 'nav.questions' },
     ]
   },
@@ -45,6 +48,7 @@ const adminGroups = [
       { path: '/admin/orders', icon: ShoppingCart, key: 'nav.orders' },
       { path: '/admin/coupons', icon: Tag, key: 'nav.coupons' },
       { path: '/admin/subscriptions', icon: CreditCard, key: 'nav.subscriptions' },
+      { path: '/admin/certificates', icon: Award, key: 'nav.certificates' },
     ]
   },
   {
@@ -57,6 +61,7 @@ const adminGroups = [
     title: 'support',
     items: [
       { path: '/admin/about', icon: Info, key: 'nav.about' },
+      { path: '/admin/home', icon: LayoutDashboard, key: 'nav.home' },
       { path: '/admin/contact', icon: Phone, key: 'nav.contact' },
 
 
@@ -124,16 +129,6 @@ export default function Sidebar({ setSidebarOpen, isCollapsed }) {
           </div>
         ))}
       </nav>
-
-      <div className="sidebar-footer">
-        {/* <div className="social-links">
-          <a href="#" className="social-link" title="Facebook"><MessageCircle size={18} /></a>
-          <a href="#" className="social-link" title="Twitter"><Send size={18} /></a>
-          <a href="#" className="social-link" title="Instagram"><Camera size={18} /></a>
-          <a href="#" className="social-link" title="YouTube"><PlayCircle size={18} /></a>
-          <a href="#" className="social-link" title="LinkedIn"><Briefcase size={18} /></a>
-        </div> */}
-      </div>
     </aside>
   )
 }

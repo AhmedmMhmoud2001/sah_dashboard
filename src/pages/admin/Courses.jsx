@@ -1,19 +1,50 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Edit, Trash2, Eye } from 'lucide-react'
 import { useI18n } from '../../context/I18nContext'
-import { getAdminCourses, createAdminCourse, updateAdminCourse, deleteAdminCourse } from '../../api'
+import { getAdminCourses, deleteAdminCourse } from '../../api'
 import './AdminPages.css'
+
+function apiOrigin() {
+  const api = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  return api.replace(/\/api\/?$/, '')
+}
+
+function resolveImageUrl(imageUrl) {
+  if (!imageUrl) return null
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl
+  return `${apiOrigin()}${imageUrl}`
+}
+
+function ensureStringArray(input) {
+  if (Array.isArray(input)) return input.filter(Boolean).map(v => String(v))
+  if (typeof input === 'string') {
+    try {
+      const parsed = JSON.parse(input)
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(v => String(v))
+    } catch {
+      // ignore
+    }
+  }
+  return []
+}
 
 export default function Courses() {
 
-  const { t } = useI18n()
+  const { t, isRTL } = useI18n()
+  const navigate = useNavigate()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-  const [formData, setFormData] = useState({
-    title: '', enTitle: '', code: '', shortDesc: '', longDesc: '', duration: '', level: '', price: 0
-  })
+
+  function displayLevel(raw) {
+    const v = String(raw || '').trim()
+    if (!v) return '—'
+    const key = v.toLowerCase()
+    if (key === 'advanced') return isRTL ? t('level.advanced') : 'Advanced'
+    if (key === 'intermediate') return isRTL ? t('level.intermediate') : 'Intermediate'
+    if (key === 'beginner') return isRTL ? t('level.beginner') : 'Beginner'
+    return v
+  }
 
   useEffect(() => { loadCourses() }, [])
 
@@ -28,43 +59,26 @@ export default function Courses() {
     }
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-    try {
-      if (isEdit && formData.id) {
-        await updateAdminCourse(formData.id, formData)
-      } else {
-        await createAdminCourse(formData)
-      }
-      setShowModal(false)
-      setFormData({ title: '', enTitle: '', code: '', shortDesc: '', longDesc: '', duration: '', level: '', price: 0 })
-      setIsEdit(false)
-      loadCourses()
-    } catch (error) {
-      alert('Error saving course')
-    }
-  }
-
   async function handleDelete(id) {
     if (!confirm(t('msg.confirmDelete'))) return
     try {
       await deleteAdminCourse(id)
       loadCourses()
     } catch (error) {
-      alert('Error deleting course')
+      alert(t('msg.error'))
     }
   }
 
   function openAdd() {
-    setIsEdit(false)
-    setFormData({ title: '', enTitle: '', code: '', shortDesc: '', longDesc: '', duration: '', level: '', price: 0 })
-    setShowModal(true)
+    navigate('/admin/courses/new')
   }
 
   function openEdit(course) {
-    setIsEdit(true)
-    setFormData(course)
-    setShowModal(true)
+    navigate(`/admin/courses/${course.id}/edit`)
+  }
+
+  function openView(course) {
+    navigate(`/admin/courses/${course.id}`)
   }
 
   if (loading) return <p>{t('msg.loading')}</p>
@@ -82,16 +96,32 @@ export default function Courses() {
             <th>{t('courses.title')}</th>
             <th>{t('courses.price')}</th>
             <th>{t('courses.duration')}</th>
-            <th>طلاب</th>
+            <th>{isRTL ? 'الطلاب' : 'Students'}</th>
             <th>{t('courses.level')}</th>
-            <th>Actions</th>
+            <th>{t('actions.actions')}</th>
           </tr>
         </thead>
         <tbody>
           {courses.map((course) => (
             <tr key={course.id}>
-              <td>{course.title}</td>
-              <td>{course.price} SAR</td>
+              <td>
+                <div className="course-title-cell">
+                  <div className="course-thumb">
+                    {course.imageUrl ? (
+                      <img
+                        src={resolveImageUrl(course.imageUrl) || ''}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                  <div className="course-title-text">{course.title}</div>
+                </div>
+              </td>
+              <td>{isRTL ? `${course.price} ر.س` : `${course.price} SAR`}</td>
               <td>{course.duration}</td>
               <td>
                 <span className="enrollment-badge">
@@ -99,11 +129,14 @@ export default function Courses() {
                   {course.enrollmentsCount || 0}
                 </span>
               </td>
-              <td><span className="badge">{course.level}</span></td>
+              <td><span className="badge">{displayLevel(course.level)}</span></td>
               <td>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="action-btn" onClick={() => openEdit(course)} title={t('actions.edit')}>
                     <Edit size={18} />
+                  </button>
+                  <button className="action-btn" onClick={() => openView(course)} title={t('actions.view')}>
+                    <Eye size={18} />
                   </button>
                   <button className="action-btn delete" onClick={() => handleDelete(course.id)} title={t('actions.delete')}>
                     <Trash2 size={18} />
@@ -116,43 +149,6 @@ export default function Courses() {
         </tbody>
       </table>
 
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{isEdit ? t('courses.edit') : t('courses.add')}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Title (Arabic)</label>
-                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Title (English)</label>
-                <input type="text" value={formData.enTitle} onChange={e => setFormData({...formData, enTitle: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Code</label>
-                <input type="text" value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Price</label>
-                <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Duration</label>
-                <input type="text" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Level</label>
-                <input type="text" value={formData.level} onChange={e => setFormData({...formData, level: e.target.value})} />
-              </div>
-              <div className="form-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>{t('actions.cancel')}</button>
-                <button type="submit" className="btn btn-primary">{t('actions.save')}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useI18n } from '../context/I18nContext'
 import './pages.css'
+import sahLogo from '../assets/Frame 4 (1).png'
 
 export default function Login() {
+  const { t, isRTL } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,14 +21,14 @@ export default function Login() {
     setLoading(true)
     
     try {
-      const user = await login(email, password)
-      if (user?.role === 'admin') {
+      const data = await login(email, password)
+      if (data?.user?.role === 'admin') {
         navigate('/admin')
       } else {
         navigate('/app')
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed')
+      setError(err.response?.data?.error || (isRTL ? 'فشل تسجيل الدخول' : 'Login failed'))
     } finally {
       setLoading(false)
     }
@@ -35,44 +38,43 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-brand">
-          <h1>SAH Academy</h1>
-          <p>Learn Accounting & Odoo</p>
+          <img className="auth-brand__logo" src={sahLogo} alt="SAH Academy" />
+          <h1 className="auth-brand__title">{t('app.name')}</h1>
+          <p className="auth-brand__sub">{isRTL ? 'تعلّم المحاسبة و Odoo' : 'Learn Accounting & Odoo'}</p>
         </div>
         
         <form className="auth-form" onSubmit={handleSubmit}>
-          <h2>Sign In</h2>
+          <h2>{isRTL ? 'تسجيل الدخول' : 'Sign In'}</h2>
           
           {error && <div className="error">{error}</div>}
           
           <div className="form-group">
-            <label>Email</label>
+            <label>{isRTL ? 'البريد الإلكتروني' : 'Email'}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={isRTL ? 'اكتب بريدك الإلكتروني' : 'Enter your email'}
               required
             />
           </div>
           
           <div className="form-group">
-            <label>Password</label>
+            <label>{isRTL ? 'كلمة المرور' : 'Password'}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={isRTL ? 'اكتب كلمة المرور' : 'Enter your password'}
               required
             />
           </div>
           
           <button type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (isRTL ? 'جاري تسجيل الدخول...' : 'Signing in...') : (isRTL ? 'تسجيل الدخول' : 'Sign In')}
           </button>
           
-          <p className="auth-link">
-            Don't have an account? <Link to="/register">Sign up</Link>
-          </p>
+          {/* Dashboard does not allow self-signup */}
         </form>
       </div>
     </div>
