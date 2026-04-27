@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Edit, Trash2, ExternalLink, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../../context/I18nContext'
-import { getAdminCourses, getAdminLessons, getAdminQuizzes, deleteAdminLesson } from '../../api'
+import { getAdminCourses, getAdminLessons, deleteAdminLesson } from '../../api'
 
 function apiOrigin() {
   try {
@@ -24,7 +24,6 @@ export default function Videos() {
   const navigate = useNavigate()
   const [lessons, setLessons] = useState([])
   const [courses, setCourses] = useState([])
-  const [lessonQuizMap, setLessonQuizMap] = useState({})
   const [courseId, setCourseId] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -41,19 +40,6 @@ export default function Videos() {
       ])
       setLessons(lessonsRes.lessons || [])
       setCourses(coursesRes.courses || [])
-
-      // Only fetch quizzes when course filter is selected (keeps it fast).
-      if (courseId) {
-        const quizzesRes = await getAdminQuizzes({ type: 'lesson', courseId })
-        const map = {}
-        ;(quizzesRes.quizzes || []).forEach((q) => {
-          if (q?.lessonId) map[q.lessonId] = q
-          if (q?.lesson?.id) map[q.lesson.id] = q
-        })
-        setLessonQuizMap(map)
-      } else {
-        setLessonQuizMap({})
-      }
     } catch (err) {
       console.error('Load error:', err)
     }
@@ -102,15 +88,11 @@ export default function Videos() {
               <th>{t('courses.title')}</th>
               <th>{t('courses.duration')}</th>
               <th>{t('videos.video') || (t('nav.videos') || 'فيديو')}</th>
-              <th>{t('nav.quizzes')}</th>
               <th width="100">{t('actions.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {lessons.map((lesson, idx) => (
-              (() => {
-                const q = lessonQuizMap?.[lesson.id] || null
-                return (
               <tr key={lesson.id}>
                 <td>{idx + 1}</td>
                 <td>
@@ -137,26 +119,6 @@ export default function Videos() {
                   ) : '-'}
                 </td>
                 <td>
-                  {!courseId ? (
-                    <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                      {t('quizzes.selectCourseFirst') || (lang === 'en' ? 'Select course' : 'اختر دورة')}
-                    </span>
-                  ) : q ? (
-                    <button
-                      type="button"
-                      className="action-btn"
-                      title={t('actions.edit')}
-                      onClick={() => navigate(`/admin/quizzes/${q.id}/edit`)}
-                    >
-                      {t('videos.quizLinked', { title: (lang === 'en' ? (q.enTitle || q.title) : (q.title || q.enTitle)) || q.id })}
-                    </button>
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                      {t('videos.noQuizLinked')}
-                    </span>
-                  )}
-                </td>
-                <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button className="action-btn" onClick={() => navigate(`/admin/videos/${lesson.id}/edit`)} title={t('actions.edit')}>
                       <Edit size={18} />
@@ -167,8 +129,6 @@ export default function Videos() {
                   </div>
                 </td>
               </tr>
-                )
-              })()
             ))}
           </tbody>
         </table>

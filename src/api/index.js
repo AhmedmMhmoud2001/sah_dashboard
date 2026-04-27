@@ -157,6 +157,11 @@ export async function getAdminUsers(params = {}) {
   return res.data
 }
 
+export async function getAdminUser(id) {
+  const res = await api.get(`/admin/users/${id}`)
+  return res.data
+}
+
 export async function getUserProgress(userId) {
   const res = await api.get(`/admin/users/${userId}/progress`)
   return res.data
@@ -179,6 +184,15 @@ export function deleteAdminUser(id) {
 
 export async function updateAdminUser(id, data) {
   const res = await api.put(`/admin/users/${id}`, data)
+  return res.data
+}
+
+export async function uploadAdminUserAvatar(userId, file) {
+  const form = new FormData()
+  form.append('avatar', file)
+  const res = await api.post(`/admin/users/${userId}/avatar`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
   return res.data
 }
 

@@ -101,6 +101,8 @@ const translations = {
     'reports.last90d': 'آخر 90 يوم',
     'reports.customRange': 'فترة مخصصة',
     'reports.refresh': 'تحديث',
+    'reports.learning.completedLessons': 'الدروس المكتملة',
+    'reports.learning.completionRate': 'نسبة الإكمال',
     
     // Actions
     'actions.save': 'حفظ',
@@ -480,6 +482,8 @@ const translations = {
     'reports.last90d': 'Last 90 days',
     'reports.customRange': 'Custom range',
     'reports.refresh': 'Refresh',
+    'reports.learning.completedLessons': 'Completed Lessons',
+    'reports.learning.completionRate': 'Completion Rate',
     
     // Actions
     'actions.save': 'Save',

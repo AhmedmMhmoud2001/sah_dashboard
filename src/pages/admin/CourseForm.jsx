@@ -90,13 +90,14 @@ export default function CourseForm({ mode, initialData }) {
         </div>
 
         <div className="form-group">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <label className="checkbox-field">
             <input
               type="checkbox"
+              className="checkbox-field__input"
               checked={!!formData.isFeatured}
               onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
             />
-            {t('courses.featured') || 'Featured course'}
+            <span>{t('courses.featured') || 'Featured course'}</span>
           </label>
         </div>
 

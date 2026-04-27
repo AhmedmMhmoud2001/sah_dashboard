@@ -64,7 +64,7 @@ export default function RBAC() {
       await deleteAdminRole(id)
       loadData()
     } catch (error) {
-      alert(t('rbac.deleteFailed'))
+      alert(error?.response?.data?.error || t('rbac.deleteFailed'))
     }
   }
 

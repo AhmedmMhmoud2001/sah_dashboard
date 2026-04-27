@@ -11,6 +11,8 @@ import CourseLearn from './pages/CourseLearn'
 import Quiz from './pages/Quiz'
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
+import UserNew from './pages/admin/UserNew'
+import UserView from './pages/admin/UserView'
 import Courses from './pages/admin/Courses'
 import CourseNew from './pages/admin/CourseNew'
 import CourseEdit from './pages/admin/CourseEdit'
@@ -94,6 +96,8 @@ function AppRoutes() {
       <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/users/new" element={<UserNew />} />
+        <Route path="/admin/users/:id" element={<UserView />} />
         <Route path="/admin/courses" element={<Courses />} />
         <Route path="/admin/courses/new" element={<CourseNew />} />
         <Route path="/admin/courses/:id" element={<CourseView />} />

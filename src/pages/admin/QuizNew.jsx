@@ -69,7 +69,7 @@ export default function QuizNew() {
       navigate('/admin/quizzes')
     } catch (e) {
       console.error(e)
-      alert(t('msg.error'))
+      alert(e?.response?.data?.error || t('msg.error'))
     } finally {
       setSaving(false)
     }

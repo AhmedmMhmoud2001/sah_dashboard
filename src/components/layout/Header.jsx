@@ -11,13 +11,13 @@ import {
   LayoutDashboard,
   Info,
   Mail,
-  BookOpen,
   Menu,
   PanelLeft
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useI18n } from '../../context/I18nContext'
 import { useAuth } from '../../context/AuthContext'
+import sahLogo from '../../assets/sah-logo.svg'
 
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed }) {
   const navigate = useNavigate()
@@ -50,9 +50,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed }) {
     <header className="admin-header">
       <div className="header-right">
         <div className="logo" onClick={() => navigate(user?.role === 'admin' ? '/admin' : '/app')}>
-          <div className="logo-icon">
-            <BookOpen size={24} strokeWidth={2.5} />
-          </div>
+          <img className="logo-image" src={sahLogo} alt="SAH" />
           <span className="logo-text">{t('app.name')}</span>
         </div>
         
